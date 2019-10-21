@@ -9,9 +9,9 @@
 Pod::Spec.new do |s|
   s.name         = "react-native-wechat"
   s.version      = "1.9.10"
-  s.summary      = "React-Native(iOS/Android) functionalities include WeChat Login, Share, Favorite and Payment {QQ: 336021910}"
+  s.summary      = "React-Native(iOS/Android)"
   s.description  = <<-DESC
-  React-Native(iOS/Android) functionalities include WeChat Login, Share, Favorite and Payment {QQ: 336021910}
+  React-Native(iOS/Android)
    DESC
   s.author       = { "weflex" => "336021910@qq.com" }
   s.homepage     = "https://github.com/weflex/react-native-wechat"
