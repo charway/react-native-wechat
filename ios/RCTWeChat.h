@@ -35,4 +35,6 @@
 
 @property NSString* appId;
 
+@property NSString* universalLink;
+
 @end
