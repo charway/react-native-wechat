@@ -9,6 +9,13 @@ const { WeChat } = NativeModules;
 // Event emitter to dispatch request and response from WeChat.
 const emitter = new EventEmitter();
 
+const WXScene = {
+  Session           : 0,  /** 聊天界面 */
+  Timeline          : 1,  /** 朋友圈 */
+  Favorite          : 2,  /** 收藏 */
+  SpecifiedSession  : 3,  /** 指定联系人(Not Supported) */
+};
+
 DeviceEventEmitter.addListener('WeChat_Resp', resp => {
   emitter.emit(resp.type, resp);
 });
@@ -63,6 +70,26 @@ function wrapApi(nativeFunc) {
       ]);
     });
   };
+}
+
+function sendRequestAndWaitResp(fn, respType) {
+  return new Promise((resolve, reject) => {
+    try {
+      let r = fn();
+      if (r instanceof Promise) {
+        r.catch(reject);
+      }
+    } catch (err) {
+      reject(err);
+    }
+    emitter.once(respType, resp => {
+      if (resp.errCode === 0) {
+        resolve(resp);
+      } else {
+        reject(new WechatError(resp));
+      }
+    });
+  });
 }
 
 /**
@@ -146,6 +173,10 @@ const nativeShareToSession = wrapApi(WeChat.shareToSession);
 const nativeShareToFavorite = wrapApi(WeChat.shareToFavorite);
 const nativeSendAuthRequest = wrapApi(WeChat.sendAuthRequest);
 
+const nativeShareImage = wrapApi(WeChat.shareImage);
+const nativeShareWebpage = wrapApi(WeChat.shareWebpage);
+const nativeShareMiniProgram = wrapApi(WeChat.shareMiniProgram);
+
 /**
  * @method sendAuthRequest
  * @param {Array} scopes - the scopes for authentication.
@@ -165,6 +196,63 @@ export function sendAuthRequest(scopes, state) {
 }
 
 /**
+ * Open a mini program
+ * @method openMiniProgram
+ * @return {Promise}
+ */
+export function openMiniProgram({id, type=0, path=''}) {
+  return new Promise((resolve, reject) => {
+    WeChat.openMiniProgram({ id, type, path }, () => {});
+    emitter.once('LaunchMiniProgram.Resp', resp => {
+      if (resp.errCode === 0) {
+        resolve(resp);
+      } else {
+        reject(new WechatError(resp));
+      }
+    });
+  });
+
+}
+
+// the internal share implmentation
+function shareTo(scene, data) {
+  if (data.type === 'imageUrl' ||
+    data.type === 'imageResource' ||
+    data.type === 'imageFile') {
+    return nativeShareImage({
+      title: data.title,
+      description: data.description,
+      imageUrl: data.imageUrl,
+      scene,
+    });
+  } else if (data.type === 'news') {
+    return nativeShareWebpage({
+      title: data.title,
+      description: data.description,
+      thumbImageUrl: data.thumbImageUrl,
+      webpageUrl: data.webpageUrl,
+      scene,
+    });
+  } else if (data.type === 'miniprogram') {
+    const miniProgram = data.miniProgram;
+    return nativeShareMiniProgram({
+      title: data.title,
+      description: data.description,
+      thumbImageUrl: data.thumbImageUrl,
+      // backwards to the old version in web page.
+      webpageUrl: data.webpageUrl,
+      // the mini program id
+      miniProgramId: miniProgram.id,
+      // 0:release, 1:test, 2:debug/experimental
+      miniProgramType: miniProgram.type,
+      // the page path, for example: `?foo=bar`
+      miniProgramPath: miniProgram.path,
+      scene,
+    });
+  }
+}
+
+/**
  * Share something to timeline/moments/朋友圈
  * @method shareToTimeline
  * @param {Object} data
@@ -178,16 +266,7 @@ export function sendAuthRequest(scopes, state) {
  * @param {String} data.fileExtension - Provide the file type if type equals file.
  */
 export function shareToTimeline(data) {
-  return new Promise((resolve, reject) => {
-    nativeShareToTimeline(data);
-    emitter.once('SendMessageToWX.Resp', resp => {
-      if (resp.errCode === 0) {
-        resolve(resp);
-      } else {
-        reject(new WechatError(resp));
-      }
-    });
-  });
+  return sendRequestAndWaitResp(() => shareTo(WXScene.Timeline, data), 'SendMessageToWX.Resp');
 }
 
 /**
@@ -204,16 +283,7 @@ export function shareToTimeline(data) {
  * @param {String} data.fileExtension - Provide the file type if type equals file.
  */
 export function shareToSession(data) {
-  return new Promise((resolve, reject) => {
-    nativeShareToSession(data);
-    emitter.once('SendMessageToWX.Resp', resp => {
-      if (resp.errCode === 0) {
-        resolve(resp);
-      } else {
-        reject(new WechatError(resp));
-      }
-    });
-  });
+  return sendRequestAndWaitResp(() => shareTo(WXScene.Session, data), 'SendMessageToWX.Resp');
 }
 
 /**
@@ -230,16 +300,7 @@ export function shareToSession(data) {
  * @param {String} data.fileExtension - Provide the file type if type equals file.
  */
 export function shareToFavorite(data) {
-  return new Promise((resolve, reject) => {
-    nativeShareToFavorite(data);
-    emitter.once('SendMessageToWX.Resp', resp => {
-      if (resp.errCode === 0) {
-        resolve(resp);
-      } else {
-        reject(new WechatError(resp));
-      }
-    });
-  });
+  return sendRequestAndWaitResp(() => shareTo(WXScene.Favorite, data), 'SendMessageToWX.Resp');
 }
 
 /**
