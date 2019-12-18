@@ -45,6 +45,7 @@ android {
 }
 
 repositories {
+    maven{ url 'https://maven.aliyun.com/repository/jcenter' }
     jcenter()
     mavenLocal()
     maven {
@@ -59,6 +60,6 @@ repositories {
 }
 
 dependencies {
-    api 'com.facebook.react:react-native:+'
-    api 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:5.5.8'
+    implementation 'com.facebook.react:react-native:+'
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:+'
 }
