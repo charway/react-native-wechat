@@ -176,9 +176,9 @@ export const getApiVersion = wrapApi(WeChat.getApiVersion);
 export const openWXApp = wrapApi(WeChat.openWXApp);
 
 // wrap the APIs
-const nativeShareToTimeline = wrapApi(WeChat.shareToTimeline);
-const nativeShareToSession = wrapApi(WeChat.shareToSession);
-const nativeShareToFavorite = wrapApi(WeChat.shareToFavorite);
+// const nativeShareToTimeline = wrapApi(WeChat.shareToTimeline);
+// const nativeShareToSession = wrapApi(WeChat.shareToSession);
+// const nativeShareToFavorite = wrapApi(WeChat.shareToFavorite);
 const nativeSendAuthRequest = wrapApi(WeChat.sendAuthRequest);
 const nativeOpenMiniProgram = wrapApi(WeChat.openMiniProgram)
 const nativeShareImage = wrapApi(WeChat.shareImage);
