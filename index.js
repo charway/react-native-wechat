@@ -1,6 +1,6 @@
 'use strict';
 
-import { DeviceEventEmitter, NativeModules, Platform } from 'react-native';
+import { DeviceEventEmitter, NativeModules, Platform, NativeEventEmitter } from 'react-native';
 import { EventEmitter } from 'events';
 
 let isAppRegistered = false;
@@ -17,6 +17,14 @@ const WXScene = {
 };
 
 DeviceEventEmitter.addListener('WeChat_Resp', resp => {
+  emitter.emit(resp.type, resp);
+});
+
+
+const wechatManagerEmitter = new NativeEventEmitter(WeChat);
+
+
+const subscription = wechatManagerEmitter.addListener('WeChat_Resp', resp => {
   emitter.emit(resp.type, resp);
 });
 
@@ -172,10 +180,11 @@ const nativeShareToTimeline = wrapApi(WeChat.shareToTimeline);
 const nativeShareToSession = wrapApi(WeChat.shareToSession);
 const nativeShareToFavorite = wrapApi(WeChat.shareToFavorite);
 const nativeSendAuthRequest = wrapApi(WeChat.sendAuthRequest);
-
+const nativeOpenMiniProgram = wrapApi(WeChat.openMiniProgram)
 const nativeShareImage = wrapApi(WeChat.shareImage);
 const nativeShareWebpage = wrapApi(WeChat.shareWebpage);
 const nativeShareMiniProgram = wrapApi(WeChat.shareMiniProgram);
+
 
 /**
  * @method sendAuthRequest
@@ -183,35 +192,17 @@ const nativeShareMiniProgram = wrapApi(WeChat.shareMiniProgram);
  * @return {Promise}
  */
 export function sendAuthRequest(scopes, state) {
-  return new Promise((resolve, reject) => {
-    WeChat.sendAuthRequest(scopes, state, () => {});
-    emitter.once('SendAuth.Resp', resp => {
-      if (resp.errCode === 0) {
-        resolve(resp);
-      } else {
-        reject(new WechatError(resp));
-      }
-    });
-  });
+  return sendRequestAndWaitResp(() => nativeSendAuthRequest(scopes, state) , 'SendAuth.Resp');
 }
+
 
 /**
  * Open a mini program
  * @method openMiniProgram
  * @return {Promise}
  */
-export function openMiniProgram({id, type=0, path=''}) {
-  return new Promise((resolve, reject) => {
-    WeChat.openMiniProgram({ id, type, path }, () => {});
-    emitter.once('LaunchMiniProgram.Resp', resp => {
-      if (resp.errCode === 0) {
-        resolve(resp);
-      } else {
-        reject(new WechatError(resp));
-      }
-    });
-  });
-
+export function openMiniProgram({id, type, path}) {
+  return sendRequestAndWaitResp(() => nativeOpenMiniProgram({ id, type, path }), 'LaunchMiniProgram.Resp');
 }
 
 // the internal share implmentation

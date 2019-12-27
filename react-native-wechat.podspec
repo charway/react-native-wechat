@@ -6,22 +6,27 @@
 #  To see working Podspecs in the CocoaPods repo see https://github.com/CocoaPods/Specs/
 #
 
+require 'json'
+
+package = JSON.parse(File.read(File.join(__dir__, 'package.json')))
+
+
 Pod::Spec.new do |s|
-  s.name         = "react-native-wechat"
-  s.version      = "1.9.10"
-  s.summary      = "React-Native(iOS/Android)"
-  s.description  = <<-DESC
-  React-Native(iOS/Android)
-   DESC
-  s.author       = { "weflex" => "336021910@qq.com" }
-  s.homepage     = "https://github.com/weflex/react-native-wechat"
-  s.license      = "MIT"
+  s.name         = package['name']
+  s.version      = package['version']
+  s.summary      = package['description']
+  s.license      = package['license']
+
+  s.authors      = package['author']
+  s.homepage     = package['homepage']
   s.platform     = :ios, "9.0"
+  
   s.source       = { :git => "https://github.com/weflex/react-native-wechat.git", :tag => "master" }
   s.source_files  = "ios/*.{h,m}"
-  s.dependency "React"
-  s.vendored_libraries = "ios/libWeChatSDK.a"
-  s.requires_arc = true
+  # s.vendored_libraries = "ios/libWeChatSDK.a"
+  # s.requires_arc = true
   s.frameworks = 'SystemConfiguration','CoreTelephony'
   s.library = 'sqlite3','c++','z'
+  s.dependency "React"
+  s.dependency "WechatOpenSDK"
 end
