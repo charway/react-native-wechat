@@ -54,7 +54,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -221,7 +220,6 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
 
     /**
      * 分享图片
-     *
      * @param data
      * @param callback
      */
@@ -230,8 +228,7 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
         Uri imgUrl = null;
         try {
             imgUrl = Uri.parse(data.getString("imageUrl"));
-        } catch (Exception ex) {
-        }
+        } catch (Exception ex) {}
 
         if (imgUrl == null) {
             callback.invoke(new Object[]{});
@@ -266,9 +263,8 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
 
     }
 
-    /**
+      /**
      * 分享本地图片
-     *
      * @param data
      * @param callback
      */
@@ -277,7 +273,7 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
         FileInputStream fs = null;
         try {
             String path = data.getString("imageUrl");
-
+                    
             if (!path.toLowerCase().startsWith("file://")) {
                 path = "file://" + path;
             }
@@ -286,7 +282,7 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
                 path = path.substring(7);
             }
             fs = new FileInputStream(path);
-            Bitmap bmp = BitmapFactory.decodeStream(fs);
+            Bitmap bmp  = BitmapFactory.decodeStream(fs);
 
             WXImageObject imgObj = new WXImageObject();
             imgObj.setImagePath(path);
@@ -307,10 +303,8 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
             e.printStackTrace();
         }
     }
-
     /**
      * 分享网页
-     *
      * @param data
      * @param callback
      */
@@ -351,7 +345,7 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
 
     @ReactMethod
     public void shareMiniProgram(final ReadableMap data, final Callback callback) {
-        WXMiniProgramObject miniProgramObj = new WXMiniProgramObject();
+       WXMiniProgramObject miniProgramObj = new WXMiniProgramObject();
         // 兼容低版本的网页链接
         miniProgramObj.webpageUrl = data.hasKey("webpageUrl") ? data.getString("webpageUrl") : null;
         // 正式版:0，测试版:1，体验版:2
@@ -437,10 +431,9 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
                         throw new Exception("Empty bitmap");
                     }
                 } catch (Exception e) {
-
+                    
                 }
             }
-
             @Override
             protected void onFailureImpl(DataSource<CloseableReference<CloseableImage>> dataSource) {
                 imageCallback.invoke(null);
